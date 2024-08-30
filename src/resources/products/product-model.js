@@ -7,6 +7,7 @@ class ProductsModel {
     this.price = price;
     this.imageUrl = imageUrl;
     this.sizes = sizes;
+    this.ratings = [];
   }
 
   static getAllProducts() {
@@ -15,9 +16,9 @@ class ProductsModel {
 
   static getProductById(id) {
     let products = this.getAllProducts();
-    let result = products.find((product) => product.id === Number(id));
-    return result;
+    return products.find((product) => product.id === Number(id)) ?? null;
   }
+
   static addProduct(product) {
     let item = new ProductsModel(
       this.getAllProducts().length + 1,
@@ -29,6 +30,22 @@ class ProductsModel {
       product.sizes
     );
     products.push(item);
+    return product;
+  }
+
+  static rateProduct(userId, productId, rating) {
+    const ratings = {
+      userId: userId,
+      rating: rating
+    }
+    const product = this.getProductById(productId);
+    const existingRatings = product.ratings;
+    const result = existingRatings.find((rateObj) => rateObj.userId == userId);
+    if(result) {
+      result.rating = rating;
+      return product;
+    }
+    product.ratings.push(ratings);
     return product;
   }
 

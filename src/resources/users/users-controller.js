@@ -23,10 +23,11 @@ class UsersController {
     }
 
     let payload = {
+        id: user.id,
         email: user.email,
         name: user.name
     };
-    let token = jwt.sign(payload, process.env.secretkey, {expiresIn: 30});
+    let token = jwt.sign(payload, process.env.secretkey, {expiresIn: '10m'});
 
     return res.status(200).json({
       success: true,

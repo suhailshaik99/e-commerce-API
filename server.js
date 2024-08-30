@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import path from "path";
 import { router as productRouter } from "./src/resources/products/product-route.js";
 import {router as userRouter} from "./src/resources/users/users-route.js";
+import { router as cartRouter } from "./src/resources/cart/cart-routes.js";
 
 dotenv.config({path: path.resolve(".env")});
 
@@ -13,5 +14,6 @@ app.use(express.json());
 
 app.use("/api/products", productRouter);
 app.use("/api/users", userRouter);
+app.use("/api/carts", cartRouter);
 
 app.listen(3000, () => console.log("App is listening on port: 3000"));

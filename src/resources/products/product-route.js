@@ -11,6 +11,7 @@ router
   .post(jwtAuthorizer, validator, ProductsController.addProduct);
 
 router.get("/filter", ProductsController.getProductsByFilter); // More Specific
+router.post("/rateProduct", jwtAuthorizer, ProductsController.rateProduct);
 
 router
   .route("/:id") // Generic

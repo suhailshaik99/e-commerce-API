@@ -15,6 +15,7 @@ export const jwtAuthorizer = (req, res, next) => {
         if(err) {
             return res.status(400).json({message: "Session Expired! Please login again to verify the identify."});
         }
+        req.user = decoded;
         next();
     });
 };

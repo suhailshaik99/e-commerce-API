@@ -1,5 +1,6 @@
 import { ProductsModel } from "./product-model.js";
 import { validationResult } from "express-validator";
+import { UsersModel } from "../users/users-model.js";
 class ProductsController {
   static getAllProducts(req, res) {
     try {
@@ -101,18 +102,18 @@ class ProductsController {
         maxPrice,
         category
       );
-      if(products.length > 0){
+      if (products.length > 0) {
         return res.status(200).json({
           success: true,
           results: products.length,
           data: products,
-        })
+        });
       } else {
         return res.status(200).json({
           success: true,
           results: products.length,
           data: "No Products found with the filter applied!...",
-        })
+        });
       }
     } catch (error) {
       res.status(500).json({
@@ -180,6 +181,44 @@ class ProductsController {
         success: true,
         operation: "Delete Successfull!",
         data: product,
+      });
+    } catch (error) {
+      res.status(400).json({
+        success: false,
+        message: "Internal Server Error",
+      });
+    }
+  }
+
+  // Rate Product
+  static rateProduct(req, res) {
+    try {
+      const { product_id, rating } = req.body;
+      const product = ProductsModel.getProductById(product_id);
+      if(!product) {
+        return res.status(400).json({
+          success: false,
+          message: "No product found with the mentioned id..."
+        })
+      }
+      if(!Number.isInteger(rating)){
+        return res.status(400).json({
+          success: false,
+          message: "Rating should be an integer and not a float value..."
+        })
+      }
+      const ratedProduct = ProductsModel.rateProduct(req.user.id, product_id, rating);
+      // const user = UsersModel.getUserById(req.user.id);
+      // if(!user) {
+      //   return res.status(400).json({
+      //     success: false,
+      //     message: 'No user found with the mentioned userId..'
+      //   })
+      // }
+      res.status(200).json({
+        success: true,
+        message: "Rating added to the product",
+        product_info: ratedProduct
       });
     } catch (error) {
       res.status(400).json({

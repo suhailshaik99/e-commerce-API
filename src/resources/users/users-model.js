@@ -23,6 +23,11 @@ class UsersModel {
     return allUsers.find((user) => user.email === email) ?? null;
   }
 
+  static getUserById(id) {
+    let allUsers = users;
+    return allUsers.find((user) => user.id === Number(id)) ?? null;
+  }
+
   static validateUserByCreds(email, password) {
     let user = users.find((userObj) => userObj.email === email && userObj.password === password) ?? null;
     return user;
