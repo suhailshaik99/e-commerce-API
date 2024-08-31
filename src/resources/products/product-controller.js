@@ -208,13 +208,6 @@ class ProductsController {
         })
       }
       const ratedProduct = ProductsModel.rateProduct(req.user.id, product_id, rating);
-      // const user = UsersModel.getUserById(req.user.id);
-      // if(!user) {
-      //   return res.status(400).json({
-      //     success: false,
-      //     message: 'No user found with the mentioned userId..'
-      //   })
-      // }
       res.status(200).json({
         success: true,
         message: "Rating added to the product",

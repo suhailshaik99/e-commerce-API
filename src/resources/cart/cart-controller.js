@@ -5,9 +5,9 @@ export default class CartController {
     try {
       const userId = req.user.id;
       const { productId } = req.query;
-      console.log(userId, productId);
+      // console.log(userId, productId);
       const result = CartModel.deleteCartItems(userId, productId);
-      console.log(result);
+      // console.log(result);
       if (!result) {
         return res.status(400).json({
           success: false,
