@@ -5,7 +5,8 @@ import { router as productRouter } from "./src/resources/products/product-route.
 import { router as userRouter } from "./src/resources/users/users-route.js";
 import { router as cartRouter } from "./src/resources/cart/cart-route.js";
 import swaggerUI from "swagger-ui-express";
-import swaggerSpecs from "./swagger.js";
+import swaggerSpecs from "./src/utils/swagger.js";
+import { globalHandler } from "./src/middlewares/globalErrorHandler.js";
 
 dotenv.config({ path: path.resolve(".env") });
 
@@ -23,5 +24,7 @@ app.get("/api/docs.json", (req, res) => {
   res.setHeader("content-type", "application/json");
   res.send(swaggerSpecs);
 });
+
+app.use(globalHandler);
 
 app.listen(3000, () => console.log("App is listening on port: 3000"));
