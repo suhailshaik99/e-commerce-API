@@ -8,8 +8,8 @@ export const signUpValidator = [
       "Name shouldn't be empty and must contain atleast 5 characters"
     ),
   body("email").isEmail().withMessage("Please enter a valid email address"),
-  body("email").custom((email) => {
-    const status = UsersModel.getUserByEmail(email);
+  body("email").custom(async (email) => {
+    const status = await UsersModel.getUserByEmail(email);
     if (status) {
       throw new Error("Email already in use. Try loggin in either.");
     }

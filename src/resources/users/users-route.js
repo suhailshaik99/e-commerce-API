@@ -4,6 +4,8 @@ import { signInValidator } from "../../middlewares/signin-validator.js";
 import { signUpValidator } from "../../middlewares/singup-validator.js";
 const router = express.Router();
 
+router.get("/", UsersController.getAllUsers);
+
 /**
  * @openapi
  * /api/users/signin/:
