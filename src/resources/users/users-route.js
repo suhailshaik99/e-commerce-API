@@ -4,7 +4,8 @@ import { signInValidator } from "../../middlewares/signin-validator.js";
 import { signUpValidator } from "../../middlewares/singup-validator.js";
 const router = express.Router();
 
-router.get("/", UsersController.getAllUsers);
+router.route("/").get(UsersController.getAllUsers); // GET all users
+router.route("/:id").delete(UsersController.deleteUser);
 
 /**
  * @openapi

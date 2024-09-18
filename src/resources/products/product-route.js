@@ -1,7 +1,6 @@
 import express from "express";
 import { ProductsController } from "./product-controller.js";
 import { validator } from "../../middlewares/product-validator.js";
-import { basicAuthoriser } from "../../middlewares/basic-authentication.js";
 import { jwtAuthorizer } from "../../middlewares/JWT-authentication.js";
 const router = express.Router();
 /**
@@ -153,7 +152,7 @@ router.get("/filter", ProductsController.getProductsByFilter); // More Specific
  *       500:
  *         description: Internal Server Error.
  */
-router.post("/rateProduct", jwtAuthorizer, ProductsController.rateProduct);
+router.post("/rateProduct/:id", jwtAuthorizer, ProductsController.rateProduct);
 
 /**
  * @openapi
@@ -264,6 +263,6 @@ router
   .route("/:id") // Generic
   .get(ProductsController.getProductById)
   .put(validator, ProductsController.updateProductById)
-  .delete(ProductsController.deleteProductById);
+  .delete(jwtAuthorizer, ProductsController.deleteProductById);
 
 export { router };

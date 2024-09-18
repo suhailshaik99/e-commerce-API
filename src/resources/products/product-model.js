@@ -1,52 +1,53 @@
+import { getDB } from "../../config/mongodb.js";
+import { ObjectId } from "mongodb";
 class ProductsModel {
-  constructor(id, name, description, category, price, imageUrl, sizes) {
-    this.id = id;
-    this.name = name;
-    this.description = description;
-    this.category = category;
-    this.price = price;
-    this.imageUrl = imageUrl;
-    this.sizes = sizes;
-    this.ratings = [];
-  }
-
-  static getAllProducts() {
+  static async getAllProducts() {
+    const db = await getDB();
+    const products = await db.collection("products").find({}).toArray();
     return products;
   }
 
-  static getProductById(id) {
-    let products = this.getAllProducts();
-    return products.find((product) => product.id === Number(id)) ?? null;
-  }
-
-  static addProduct(product) {
-    let item = new ProductsModel(
-      this.getAllProducts().length + 1,
-      product.name,
-      product.description,
-      product.category,
-      product.price,
-      product.imageUrl,
-      product.sizes
+  static async getProductById(id) {
+    const db = await getDB();
+    return (
+      (await db.collection("products").findOne({ _id: new ObjectId(id) })) ??
+      null
     );
-    products.push(item);
-    return product;
   }
 
-  static rateProduct(userId, productId, rating) {
-    const ratings = {
-      userId: userId,
-      rating: rating
+  static async addProduct(product) {
+    const db = await getDB();
+    const insertedProduct = await db.collection("products").insertOne(product);
+    if (insertedProduct.acknowledged) return product;
+    return false;
+  }
+
+  static async rateProduct(userId, productId, rating) {
+    const db = await getDB();
+    const ratingObj = { userId: new ObjectId(userId), rating };
+    const product = await db
+      .collection("products")
+      .findOne({ _id: new ObjectId(productId) });
+    const user = product?.ratings?.find((product) => product.userId == userId);
+    if (!user) {
+      return await db
+        .collection("products")
+        .findOneAndUpdate(
+          { _id: new ObjectId(productId) },
+          { $push: { ratings: ratingObj } },
+          { upsert: true, returnDocument: "after" }
+        );
     }
-    const product = this.getProductById(productId);
-    const existingRatings = product.ratings;
-    const result = existingRatings.find((rateObj) => rateObj.userId == userId);
-    if(result) {
-      result.rating = rating;
-      return product;
-    }
-    product.ratings.push(ratings);
-    return product;
+    return await db.collection("products").findOneAndUpdate(
+      {
+        _id: new ObjectId(productId),
+        "ratings.userId": new ObjectId(userId),
+      },
+      {
+        $set: { "ratings.$.rating": rating },
+      },
+      { returnDocument: "after" }
+    );
   }
 
   static getProductsByFilter(minPrice, maxPrice, category) {
@@ -64,28 +65,27 @@ class ProductsModel {
     return results;
   }
 
-  static updateProductById(product, id) {
-    let productIndex = this.getAllProducts().findIndex(
-      (product) => product.id === Number(id)
-    );
-    if (productIndex == -1) {
-      return false;
-    }
-    let updatedItem = Object.assign({ id: id }, product);
-    this.getAllProducts().splice(productIndex, 1, updatedItem);
-    let item = this.getAllProducts()[productIndex];
-    return item;
+  static async updateProductById(productId, product) {
+    const db = await getDB();
+    const newProduct = await db
+      .collection("products")
+      .findOneAndUpdate(
+        { _id: new ObjectId(productId) },
+        { $set: product },
+        { returnDocument: "after" }
+      );
+    return newProduct;
   }
 
-  static deleteProductById(id) {
-    let productIndex = this.getAllProducts().findIndex(
-      (product) => product.id === Number(id)
-    );
-    if (productIndex == -1) {
-      return false;
-    }
-    let productPopped = this.getAllProducts().splice(productIndex, 1);
-    return productPopped;
+  static async deleteProductById(productId) {
+    const db = await getDB();
+    const product = await db
+      .collection("products")
+      .findOne({ _id: new ObjectId(productId) });
+    if (!product) return null;
+    return await db
+      .collection("products")
+      .findOneAndDelete({ _id: new ObjectId(productId) });
   }
 
   static isValidCategory(category) {
@@ -99,44 +99,5 @@ class ProductsModel {
 
 const categories = ["Footwear", "Clothing", "Electronics", "HomeNeeds"];
 const sizes = ["S", "s", "M", "m", "L", "l", "XL", "xl", "XXL", "xxl"];
-
-const products = [
-  new ProductsModel(
-    1,
-    "Mens Sandal",
-    "Woodland brings mens sandal",
-    "Footwear",
-    1900,
-    "image-sandal.png",
-    ["s", "m", "l", "xl"]
-  ),
-  new ProductsModel(
-    2,
-    "Mens Shoe",
-    "Woodland brings mens shoe",
-    "Footwear",
-    2500,
-    "image-shoe.png",
-    ["s", "m", "l", "xl"]
-  ),
-  new ProductsModel(
-    3,
-    "Mens Slippers",
-    "Bata brings mens slippers",
-    "Footwear",
-    3900,
-    "image-slippers.png",
-    ["s", "m", "l", "xl"]
-  ),
-  new ProductsModel(
-    4,
-    "Mens Sneakers",
-    "Woodland brings mens sneakers",
-    "Footwear",
-    2900,
-    "image-sneaker.png",
-    ["s", "m", "l", "xl"]
-  ),
-];
 
 export { ProductsModel };

@@ -1,5 +1,6 @@
 import { getDB } from "./../../config/mongodb.js";
 import { AppError } from "../../utils/appError.js";
+import { ObjectId } from "mongodb";
 class UsersModel {
   static async getAllUsers() {
     try {
@@ -18,6 +19,15 @@ class UsersModel {
       return user;
     } catch (err) {
       new AppError(err.message, 400);
+    }
+  }
+
+  static async deleteUser(id) {
+    try {
+      const db = await getDB();
+      return await db.collection("users").findOneAndDelete({_id: new ObjectId(id)}, { projection: { password: 0 } }) ?? null;
+    } catch (error) {
+      new AppError(error.message, 400);
     }
   }
 

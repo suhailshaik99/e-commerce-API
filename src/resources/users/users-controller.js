@@ -22,7 +22,7 @@ class UsersController {
     }
 
     let payload = {
-      id: user.id,
+      id: user._id,
       email: user.email,
       name: user.name,
     };
@@ -66,6 +66,18 @@ class UsersController {
       users,
     });
   }
+
+  static async deleteUser(req, res, next) {
+    const id = req.params.id;
+    const delUser = await UsersModel.deleteUser(id);
+    if(!delUser) return next(new AppError("User not found with the mentioned Id to be deleted..."));
+    res.status(201).json({
+      status: "success",
+      message: "User deleted successfully...!",
+      delUser
+    })
+  }
+
 }
 
 export { UsersController };

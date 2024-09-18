@@ -3,8 +3,7 @@ import { ProductsModel } from "../resources/products/product-model.js";
 export const validator = [
   body("name")
     .notEmpty()
-    .isAlpha()
-    .withMessage("Name should contain only alphabets and not numbers."),
+    .withMessage("Name should cannot be empty..."),
   body("description")
     .notEmpty()
     .isLength({ min: 10 })
