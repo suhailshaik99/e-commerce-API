@@ -118,7 +118,7 @@ router.get("/filter", ProductsController.getProductsByFilter); // More Specific
 
 /**
  * @openapi
- * /api/products/rateProduct:
+ * /api/products/:
  *   post:
  *     summary: An Endpoint to rate a product.
  *     description: This endpoint enables the user to post a new product. This endpoint expects a JSON body which contains all the required details to post a new product.
@@ -152,7 +152,7 @@ router.get("/filter", ProductsController.getProductsByFilter); // More Specific
  *       500:
  *         description: Internal Server Error.
  */
-router.post("/rateProduct/:id", jwtAuthorizer, ProductsController.rateProduct);
+// router.post("/rateProduct/:id", jwtAuthorizer, ProductsController.rateProduct);
 
 /**
  * @openapi
@@ -262,6 +262,7 @@ router.post("/rateProduct/:id", jwtAuthorizer, ProductsController.rateProduct);
 router
   .route("/:id") // Generic
   .get(ProductsController.getProductById)
+  .post(jwtAuthorizer, ProductsController.rateProduct)
   .put(validator, ProductsController.updateProductById)
   .delete(jwtAuthorizer, ProductsController.deleteProductById);
 

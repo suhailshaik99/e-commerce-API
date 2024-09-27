@@ -1,56 +1,68 @@
+import { getDB } from "../../config/mongodb.js";
+import { ObjectId } from "mongodb";
+
 export default class CartModel {
-  constructor(cartId, productId, userId, qty) {
-    this.cartId = cartId;
-    this.productId = productId;
-    this.userId = userId;
-    this.qty = qty;
+  static async getAllCarts() {
+    const db = await getDB();
+    return (await db.collection("carts").find({}).toArray()) ?? null;
   }
-
-  static getAllItems() {
-    return cartItems;
-  }
-
-  static addProductToCart(userId, productId, qty) {
-    const item = new CartModel(
-      this.getAllItems().length + 1,
-      productId,
-      userId,
-      qty
-    );
-    cartItems.push(item);
-  }
-
-  static getItemsByUserId(userId) {
+  static async getMyCart(userId) {
+    const db = await getDB();
     return (
-      this.getAllItems().filter((item) => item.userId === Number(userId)) ??
-      null
+      (await db
+        .collection("carts")
+        .findOne({ userId: new ObjectId(userId) })) ?? null
     );
   }
 
-  static deleteCartItems(userId, productId) {
-    const products = this.getAllItems().filter(
-      (items) =>
-        items.productId === Number(productId) && items.userId === Number(userId)
-    );
-    if (products.length == 0) {
-      return false;
+  static async addToMyCart(userId, productId, quantity) {
+    const db = await getDB();
+    const userCart = await db.collection("carts").findOne({
+      userId: new ObjectId(userId),
+    });
+    const productExist = await db.collection("carts").findOne({
+      userId: new ObjectId(userId),
+      "products.productId": new ObjectId(productId),
+    });
+    if (!userCart) {
+      const addedItem = await db.collection("carts").insertOne({
+        userId: new ObjectId(userId),
+        products: [
+          {
+            productId: new ObjectId(productId),
+            quantity,
+          },
+        ],
+      });
+      return addedItem;
     }
-    console.log(products);
-    const indices = [];
-    products.forEach((items) => {
-      indices.push(
-        this.getAllItems().findIndex(
-          (item) =>
-            item.productId === items.productId && item.userId === items.userId
-        )
-      );
-    });
-    console.log(indices);
-    indices.forEach((index) => {
-      this.getAllItems().splice(index, 1);
-    });
-    return true;
+
+    if (!productExist) {
+      return await db
+        .collection("carts")
+        .findOneAndUpdate(
+          { userId: new ObjectId(userId) },
+          {
+            $push: {
+              products: { productId: new ObjectId(productId), quantity },
+            },
+          },
+          {
+            upsert: true,
+            returnDocument: "after",
+          }
+        );
+    }
+    return await db.collection("carts").findOneAndUpdate(
+      {
+        userId: new ObjectId(userId),
+        "products.productId": new ObjectId(productId),
+      },
+      { $inc: { "products.$.quantity": quantity } },
+      {
+        upsert: true,
+        returnDocument: "after",
+      }
+    );
   }
 }
-
-const cartItems = [new CartModel(1, 1, 1, 5)];

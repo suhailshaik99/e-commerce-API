@@ -1,6 +1,6 @@
 import expres from "express";
-import { jwtAuthorizer } from "../../middlewares/JWT-authentication.js";
 import CartController from "./cart-controller.js";
+import { jwtAuthorizer } from "../../middlewares/JWT-authentication.js";
 const router = expres.Router();
 
 /**
@@ -66,8 +66,7 @@ const router = expres.Router();
  */
 router
   .route("/")
-  .get(jwtAuthorizer, CartController.addProductToCart)
-  .delete(jwtAuthorizer, CartController.deleteCartItems);
+  .get(CartController.getAllCarts)
 
 /**
  * @openapi
@@ -89,6 +88,7 @@ router
  *       500:
  *         description: Internal Server Error
  */
-router.route("/cartItems").get(jwtAuthorizer, CartController.getAllCartItems);
+router.route("/mycart").get(jwtAuthorizer, CartController.getMyCart);
+router.route("/:id").post(jwtAuthorizer, CartController.addToMyCart);
 
 export { router };

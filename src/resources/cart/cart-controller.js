@@ -1,75 +1,50 @@
-import { ProductsModel } from "../products/product-model.js";
 import CartModel from "./cart-model.js";
+import { AppError } from "../../utils/appError.js";
 export default class CartController {
-  static deleteCartItems(req, res) {
-    try {
-      const userId = req.user.id;
-      const { productId } = req.query;
-      // console.log(userId, productId);
-      const result = CartModel.deleteCartItems(userId, productId);
-      // console.log(result);
-      if (!result) {
-        return res.status(400).json({
-          success: false,
-          message: "No Products found with the mentioned productId...",
-        });
-      }
-      res.status(200).json({
-        success: true,
-        message: "Product(s) deleted successfully...!"
-      })
-    } catch (error) {
-      return res.status(400).json({
-        success: false,
-        message: "Internal Server Error!",
-      });
-    }
+  static async getAllCarts(req, res, next) {
+    const carts = await CartModel.getAllCarts();
+    if (carts.length === 0)
+      return next(new AppError("No carts yet by the users..", 404));
+    res.status(200).json({
+      success: true,
+      message: "Carts Fetched...!",
+      carts,
+    });
   }
 
-  static getAllCartItems(req, res) {
-    try {
-      const allItems = CartModel.getAllItems();
-      if (!allItems) {
-        return res.status(400).json({
-          success: false,
-          message:
-            "The cart is empty, add products to the cart before you view them..",
-        });
-      }
-      res.status(200).json({
-        success: true,
-        message: "Cart Items Fetched successfully...",
-        items: allItems,
-      });
-    } catch (error) {
-      return res.status(400).json({
-        success: false,
-        message: "Internal Server Error!",
-      });
-    }
+  static async getMyCart(req, res, next) {
+    const mycart = await CartModel.getMyCart(req.user.id);
+    if (!mycart)
+      return next(
+        new AppError(
+          "Your Cart is Empty...! Try adding some products to your cart..",
+          404
+        )
+      );
+    res.status(200).json({
+      success: true,
+      message: "Cart fetched successfully..",
+      mycart,
+    });
   }
 
-  static addProductToCart(req, res) {
+  static async addToMyCart(req, res, next) {
     try {
+      const productId = req.params.id;
       const userId = req.user.id;
-      const { product_id, quantity } = req.query;
-      const findProduct = ProductsModel.getProductById(product_id);
-      if (!findProduct) {
-        return res.status(400).json({
-          success: false,
-          message: "The product that you are trying to add doesn't exists...",
-        });
-      }
-      CartModel.addProductToCart(userId, product_id * 1, quantity);
-      res.status(200).json({
+      const {quantity} = req.body;
+      const addedItem = await CartModel.addToMyCart(
+        userId,
+        productId,
+        quantity
+      );
+      res.status(201).json({
         success: true,
-        message: "Product added to cart successfully...!",
+        message: "Product added to cart successfully..",
+        addedItem,
       });
     } catch (error) {
-      return res.status(400).json({
-        success: false,
-        message: "Internal Server Error!",
-      });
+      next(new AppError(error.message, 500));
     }
   }
 }
